@@ -37,6 +37,8 @@ sub new {
     $self->{IS_SECURE} = shift;
     $self->{IS_SECURE} = 1 if not defined $self->{IS_SECURE};
     $self->{PROTOCOL} = $self->{IS_SECURE} ? 'https' : 'http';
+    $self->{NO_ENCODE} = shift;
+    $self->{NO_ENCODE} = 0 if not defined $self->{NO_ENCODE};
     $self->{SERVER} = shift || $DEFAULT_HOST;
     $self->{PORT} = shift || $PORTS_BY_SECURITY->{$self->{IS_SECURE}};
     $self->{CALLING_FORMAT} = shift || $CALLING_FORMATS->[0];
@@ -46,6 +48,16 @@ sub new {
 
     bless ($self, $class);
     return $self;
+}
+
+sub escape_key {
+    my ($self, $key) = @_;
+	croak 'must specify key' unless $key;
+    if ($self->{NO_ENCODE}) {
+		return $key;
+    } else {
+        return uri_escape($key);
+    }
 }
 
 sub set_calling_format {
@@ -104,7 +116,7 @@ sub put {
     $object ||= S3::S3Object->new();
     $headers ||= {};
 
-    $key = uri_escape($key);
+    $key = $self->escape_key($key);
 
     return $self->generate_url('PUT', $bucket, $key, {}, S3::merge_meta($headers, $object->metadata));
 }
@@ -115,7 +127,7 @@ sub get {
     croak 'must specify key' unless $key;
     $headers ||= {};
 
-    $key = uri_escape($key);
+    $key = $self->escape_key($key);
 
     return $self->generate_url('GET', $bucket, $key, {}, $headers);
 }
@@ -126,7 +138,7 @@ sub delete {
     croak 'must specify key' unless $key;
     $headers ||= {};
 
-    $key = uri_escape($key);
+    $key = $self->escape_key($key);
 
     return $self->generate_url('DELETE', $bucket, $key, {}, $headers);
 }
@@ -155,7 +167,7 @@ sub get_acl {
     croak 'must specify key' unless defined $key;
     $headers ||= {};
 
-    $key = uri_escape($key);
+    $key = $self->escape_key($key);
 
     return $self->generate_url('GET', $bucket, $key, {acl => undef}, $headers);
 }
@@ -172,7 +184,7 @@ sub put_acl {
     croak 'must specify key' unless defined $key;
     $headers ||= {};
 
-    $key = uri_escape($key);
+    $key = $self->escape_key($key);
 
     return $self->generate_url('PUT', $bucket, $key, {acl => undef}, $headers);
 }

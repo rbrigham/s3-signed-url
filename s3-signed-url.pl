@@ -37,6 +37,7 @@ my $expires = 0;
 my $expiresIn = 0;
 my $callingFormat = 'PATH';
 my $secureTransport = 0;
+my $noEncode = 0;
 my $help;
 my $secretKey;
 
@@ -47,7 +48,8 @@ GetOptions(
 	'expires=i' => \$expires,
 	'expires-in=i' => \$expiresIn,
 	'format=s' => \$callingFormat,
-    'secure' => \$secureTransport
+    'secure' => \$secureTransport,
+    'no-encode' => \$noEncode
 );
 
 my $usage = <<USAGE;
@@ -57,6 +59,7 @@ Usage $0 --key key-alias --bucket bucket-name --object object-key [options]
   --expires-in seconds        url expires in specified number of seconds
   --format url-format         desired format of url [PATH|SUBDOMAIN|VANITY]
   --secure                    use https instead of http
+  --no-encode                 do not escape the object key
 USAGE
 die $usage if $help || !defined $keyAlias || !defined $bucketName || !defined $objectKey;
 
@@ -64,7 +67,7 @@ my $keyInfo = S3::S3CurlFile::get_key($keyAlias);
 $keyId = $keyInfo->{id};
 $secretKey = $keyInfo->{key};
 
-my $generator = S3::QueryStringAuthGenerator->new($keyId, $secretKey, $secureTransport);
+my $generator = S3::QueryStringAuthGenerator->new($keyId, $secretKey, $secureTransport, $noEncode);
 $generator->set_calling_format($callingFormat);
 if ($expiresIn > 0) {
     $generator->expires_in($expiresIn);

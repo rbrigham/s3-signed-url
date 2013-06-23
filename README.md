@@ -64,6 +64,7 @@ USAGE
       --expires-in seconds        url expires in specified number of seconds
       --format url-format         desired format of url [PATH|SUBDOMAIN|VANITY]
       --secure                    use https instead of http
+      --no-encode                 do not escape the object key
 
 
 REFERENCES
